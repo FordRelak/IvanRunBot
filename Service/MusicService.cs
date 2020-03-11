@@ -40,6 +40,11 @@ namespace DB_2._0.Service
                 return;
             }
 
+            if (arg2.VoiceChannel == arg3.VoiceChannel)
+            {
+                return;
+            }
+
             var oldChannel = arg2.VoiceChannel.Users;
             var newChannel = arg3.VoiceChannel.Users;
 
