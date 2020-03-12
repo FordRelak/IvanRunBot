@@ -37,6 +37,7 @@ namespace DB_2._0
                 .AddSingleton<LoggingService>()
                 .AddSingleton<CommandHandler>()
                 .AddSingleton<MusicService>()
+                .AddSingleton<NewUserJoinService>()
                 .AddSingleton<LavaConfig>()
                 .AddSingleton<LavaNode>()
                 //
@@ -45,6 +46,7 @@ namespace DB_2._0
             serviceProvider.GetRequiredService<LoggingService>();
             serviceProvider.GetRequiredService<MusicService>();
             serviceProvider.GetRequiredService<MusicService>().Install();
+            serviceProvider.GetRequiredService<NewUserJoinService>();
             await serviceProvider.GetRequiredService<CommandHandler>().InstallAsync();
 
             await _client.LoginAsync(TokenType.Bot, System.IO.File.ReadAllText("token.txt"));

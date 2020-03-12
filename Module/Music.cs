@@ -1,7 +1,9 @@
 ﻿using Discord;
+using Discord.Audio;
 using Discord.Commands;
 using Discord.WebSocket;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -55,7 +57,7 @@ namespace DB_2._0.Service
         {
             if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
             {
-                await ReplyAsync("I'm not connected to any voice channels!");
+                await ReplyAsync("Я не в голосовом");
                 return;
             }
 
@@ -69,7 +71,7 @@ namespace DB_2._0.Service
             try
             {
                 await _lavaNode.LeaveAsync(voiceChannel);
-                await ReplyAsync($"I've left {voiceChannel.Name}!");
+                await ReplyAsync($"Ну вышел из {voiceChannel.Name}!");
             }
             catch (Exception exception)
             {
@@ -340,6 +342,5 @@ namespace DB_2._0.Service
             }
         }
 
-        
     }
 }

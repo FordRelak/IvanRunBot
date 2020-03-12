@@ -45,66 +45,72 @@ namespace DB_2._0.Service
                 return;
             }
 
-            var oldChannel = arg2.VoiceChannel.Users;
-            var newChannel = arg3.VoiceChannel.Users;
-
-            //Бот на новом канале
-            var botNewChannel = from user in newChannel
-                                where user.IsBot
-                                select user;
-            //Бот на старом канале
-            var botOldChannel = from user in oldChannel
-                                where user.IsBot
-                                select user;
-
             //Бот на новом
-            if (botNewChannel.Count() > 0)
+            if (!(arg3.VoiceChannel is null))
             {
-                if (_lavaNode.TryGetPlayer(botNewChannel.FirstOrDefault().Guild, out var playerNew))
+                var newChannel = arg3.VoiceChannel.Users;
+                //Бот на новом канале
+                var botNewChannel = from user in newChannel
+                                    where user.IsBot
+                                    select user;
+
+                if (botNewChannel.Count() > 0)
                 {
-                    if (newChannel.Count > 2)
+                    if (_lavaNode.TryGetPlayer(botNewChannel.FirstOrDefault().Guild, out var playerNew))
                     {
-                        if (playerNew.PlayerState == PlayerState.Playing)
+                        //if (newChannel.Count > 2)
+                        //{
+                        //    if (playerNew.PlayerState == PlayerState.Playing)
+                        //    {
+                        //        await playerNew.TextChannel.SendMessageAsync($"{arg1.Username} зашёл. Трек на паузу");
+                        //        await playerNew.PauseAsync();
+                        //        return;
+                        //    }
+                        //}
+                        if (newChannel.Count == 2)
                         {
-                            await playerNew.TextChannel.SendMessageAsync($"{arg1.Username} зашёл. Трек на паузу");
-                            await playerNew.PauseAsync();
-                            return;
-                        }
-                    }
-                    if (newChannel.Count == 2)
-                    {
-                        if (playerNew.PlayerState == PlayerState.Paused)
-                        {
-                            await playerNew.TextChannel.SendMessageAsync($"Возобновляю  {playerNew.Track.Title}");
-                            await playerNew.ResumeAsync();
-                            return;
+                            if (playerNew.PlayerState == PlayerState.Paused)
+                            {
+                                await playerNew.TextChannel.SendMessageAsync($"Возобновляю  {playerNew.Track.Title}");
+                                await playerNew.ResumeAsync();
+                                return;
+                            }
                         }
                     }
                 }
             }
-            else if (botOldChannel.Count() > 0)
+            //Бот на старом
+            else if (!(arg2.VoiceChannel is null))
             {
-                if (_lavaNode.TryGetPlayer(botOldChannel.FirstOrDefault().Guild, out var playerOld))
+                var oldChannel = arg2.VoiceChannel.Users;
+                //Бот на старом канале
+                var botOldChannel = from user in oldChannel
+                                    where user.IsBot
+                                    select user;
+                if (botOldChannel.Count() > 0)
                 {
-                    if (oldChannel.Count == 1)
+                    if (_lavaNode.TryGetPlayer(botOldChannel.FirstOrDefault().Guild, out var playerOld))
                     {
-                        if (playerOld.PlayerState == PlayerState.Playing)
+                        if (oldChannel.Count == 1)
                         {
-                            await playerOld.TextChannel.SendMessageAsync($"Ставлю на паузу {playerOld.Track.Title}");
-                            await playerOld.PauseAsync();
-                            return;
+                            if (playerOld.PlayerState == PlayerState.Playing)
+                            {
+                                await playerOld.TextChannel.SendMessageAsync($"Ставлю на паузу {playerOld.Track.Title}");
+                                await playerOld.PauseAsync();
+                                return;
+                            }
                         }
-                    }
-                    if (oldChannel.Count == 2)
-                    {
-                        if (playerOld.PlayerState == PlayerState.Paused)
+                        if (oldChannel.Count == 2)
                         {
-                            await playerOld.TextChannel.SendMessageAsync($"Возобновляю  {playerOld.Track.Title}");
-                            await playerOld.ResumeAsync();
-                            return;
+                            if (playerOld.PlayerState == PlayerState.Paused)
+                            {
+                                await playerOld.TextChannel.SendMessageAsync($"Возобновляю  {playerOld.Track.Title}");
+                                await playerOld.ResumeAsync();
+                                return;
+                            }
                         }
+                        else return;
                     }
-                    else return;
                 }
             }
 
@@ -119,18 +125,18 @@ namespace DB_2._0.Service
             var player = args.Player;
             if (!player.Queue.TryDequeue(out var queueable))
             {
-                await player.TextChannel.SendMessageAsync("No more tracks to play.");
+                await player.TextChannel.SendMessageAsync("Нечего играть");
                 return;
             }
 
             if (!(queueable is LavaTrack track))
             {
-                await player.TextChannel.SendMessageAsync("Next item in queue is not a track.");
+                await player.TextChannel.SendMessageAsync("Следующий трек это не трек");
                 return;
             }
             await args.Player.PlayAsync(track);
             await args.Player.TextChannel.SendMessageAsync(
-                $"{args.Reason}: {args.Track.Title}\nNow playing: {track.Title}");
+                $"{args.Reason}: {args.Track.Title}\nСейчас играет: {track.Title}");
         }
 
         private async Task OnReady()
