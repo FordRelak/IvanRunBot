@@ -1,11 +1,7 @@
 ﻿using Discord;
-using Discord.Audio;
 using Discord.Commands;
-using Discord.WebSocket;
 using System;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Victoria;
 using Victoria.Enums;
@@ -113,13 +109,13 @@ namespace DB_2._0.Service
                         player.Queue.Enqueue(track);
                     }
 
-                    await ReplyAsync($"Enqueued {searchResponse.Tracks.Count} tracks.");
+                    await ReplyAsync($"В очереди {searchResponse.Tracks.Count} треков.");
                 }
                 else
                 {
                     var track = searchResponse.Tracks[0];
                     player.Queue.Enqueue(track);
-                    await ReplyAsync($"Enqueued: {track.Title}");
+                    await ReplyAsync($"Добавлен в очередь: {track.Title}");
                 }
             }
             else
@@ -133,7 +129,20 @@ namespace DB_2._0.Service
                         if (i == 0)
                         {
                             await player.PlayAsync(track);
-                            await ReplyAsync($"Now Playing: {track.Title}");
+
+                            #region Embed
+                            var embed = new EmbedBuilder()
+                                .WithAuthor(Context.User.Username, Context.User.GetAvatarUrl())
+                                .WithTitle(player.Track.Title)
+                                .WithUrl(player.Track.Url)
+                                .WithColor(Color.Orange)
+                                .WithCurrentTimestamp()
+                                .WithImageUrl(getYouTubeThumbnail(query))
+                                //
+                                .Build();
+                            #endregion 
+
+                            await ReplyAsync(embed: embed);
                         }
                         else
                         {
@@ -146,7 +155,20 @@ namespace DB_2._0.Service
                 else
                 {
                     await player.PlayAsync(track);
-                    await ReplyAsync($"Now Playing: {track.Title}");
+
+                    #region Embed
+                    var embed = new EmbedBuilder()
+                        .WithAuthor(Context.User.Username, Context.User.GetAvatarUrl())
+                        .WithTitle(player.Track.Title)
+                        .WithUrl(player.Track.Url)
+                        .WithColor(Color.Orange)
+                        .WithCurrentTimestamp()
+                        .WithImageUrl(getYouTubeThumbnail(query))
+                        //
+                        .Build();
+                    #endregion
+
+                    await ReplyAsync(embed: embed);
                 }
             }
         }
@@ -340,6 +362,34 @@ namespace DB_2._0.Service
             {
                 await ReplyAsync(exception.Message);
             }
+        }
+
+        private string getYouTubeThumbnail(string YoutubeUrl)
+        {
+            string youTubeThumb = string.Empty;
+            if (YoutubeUrl == "")
+                return "";
+
+            if (YoutubeUrl.IndexOf("=") > 0)
+            {
+                youTubeThumb = YoutubeUrl.Split('=')[1];
+            }
+            else if (YoutubeUrl.IndexOf("/v/") > 0)
+            {
+                string strVideoCode = YoutubeUrl.Substring(YoutubeUrl.IndexOf("/v/") + 3);
+                int ind = strVideoCode.IndexOf("?");
+                youTubeThumb = strVideoCode.Substring(0, ind == -1 ? strVideoCode.Length : ind);
+            }
+            else if (YoutubeUrl.IndexOf('/') < 6)
+            {
+                youTubeThumb = YoutubeUrl.Split('/')[3];
+            }
+            else if (YoutubeUrl.IndexOf('/') > 6)
+            {
+                youTubeThumb = YoutubeUrl.Split('/')[1];
+            }
+
+            return "http://img.youtube.com/vi/" + youTubeThumb + "/mqdefault.jpg";
         }
 
     }

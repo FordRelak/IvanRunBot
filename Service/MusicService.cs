@@ -28,8 +28,8 @@ namespace DB_2._0.Service
         public void Install()
         {
             _client.Ready += OnReady;
-            _lavaNode.OnTrackEnded += OnTrackEnded;
             _client.UserVoiceStateUpdated += UserVoiceStateUpdated;
+            _lavaNode.OnTrackEnded += OnTrackEnded;
         }
 
         //Если ты останешься один пусть играет трек
@@ -134,6 +134,19 @@ namespace DB_2._0.Service
                 await player.TextChannel.SendMessageAsync("Следующий трек это не трек");
                 return;
             }
+
+            #region Embed
+            var embed = new EmbedBuilder()
+                .WithAuthor("Играет")
+                .WithTitle(player.Track.Title)
+                .WithUrl(player.Track.Url)
+                .WithColor(Color.Orange)
+                .WithCurrentTimestamp()
+                .WithImageUrl(getYouTubeThumbnail(player.Track.Url))
+                //
+                .Build();
+            #endregion
+
             await args.Player.PlayAsync(track);
             await args.Player.TextChannel.SendMessageAsync(
                 $"{args.Reason}: {args.Track.Title}\nСейчас играет: {track.Title}");
@@ -143,5 +156,34 @@ namespace DB_2._0.Service
         {
             await _lavaNode.ConnectAsync();
         }
+
+        private string getYouTubeThumbnail(string YoutubeUrl)
+        {
+            string youTubeThumb = string.Empty;
+            if (YoutubeUrl == "")
+                return "";
+
+            if (YoutubeUrl.IndexOf("=") > 0)
+            {
+                youTubeThumb = YoutubeUrl.Split('=')[1];
+            }
+            else if (YoutubeUrl.IndexOf("/v/") > 0)
+            {
+                string strVideoCode = YoutubeUrl.Substring(YoutubeUrl.IndexOf("/v/") + 3);
+                int ind = strVideoCode.IndexOf("?");
+                youTubeThumb = strVideoCode.Substring(0, ind == -1 ? strVideoCode.Length : ind);
+            }
+            else if (YoutubeUrl.IndexOf('/') < 6)
+            {
+                youTubeThumb = YoutubeUrl.Split('/')[3];
+            }
+            else if (YoutubeUrl.IndexOf('/') > 6)
+            {
+                youTubeThumb = YoutubeUrl.Split('/')[1];
+            }
+
+            return "http://img.youtube.com/vi/" + youTubeThumb + "/mqdefault.jpg";
+        }
+
     }
 }
